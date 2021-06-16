@@ -1,33 +1,34 @@
 const express = require("express");
-const app = express();
-const port = 3000;
+const mongoose = require("mongoose");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
-app.use(MiddleWare1);
-app.use(MiddleWare2);
+var app = express();
 
-function ErrorHandling(err, req, res, next) {
-  if (err) {
-    res.send("There is some error");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl: "",
+    }),
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 },
+  })
+);
+
+app.get("/", (req, res, next) => {
+  if (req.session.viewcount) {
+    req.session.viewcount = req.session.viewcount + 1;
+  } else {
+    req.session.viewcount = 1;
   }
-  console.log("error");
-  next();
-}
-
-function MiddleWare1(req, res, next) {
-  console.log("I am middle one");
-  const errObj = new Error("I am an error, do not scare with me");
-  next(errObj);
-}
-
-function MiddleWare2(req, res, next) {
-  console.log("I am middle two");
-  next();
-}
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-  console.log("I am main function");
+  res.send(
+    `<h1>You have visited this site ${req.session.viewcount} times.</h1>`
+  );
 });
-app.use(ErrorHandling);
 
-app.listen(port);
+app.listen(3000);
