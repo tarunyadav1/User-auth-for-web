@@ -1,24 +1,33 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require("express");
+const app = express();
+const port = 3000;
 
-app.use(MiddleWare1)
-app.use(MiddleWare2)
+app.use(MiddleWare1);
+app.use(MiddleWare2);
 
-
-function MiddleWare1(req,res, next){
-    console.log("I am middle one")
-    next()
+function ErrorHandling(err, req, res, next) {
+  if (err) {
+    res.send("There is some error");
+  }
+  console.log("error");
+  next();
 }
 
-function MiddleWare2(req,res, next){
-    console.log("I am middle two")
-    next()
+function MiddleWare1(req, res, next) {
+  console.log("I am middle one");
+  const errObj = new Error("I am an error, do not scare with me");
+  next(errObj);
 }
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-  console.log("I am main function")
-})
+function MiddleWare2(req, res, next) {
+  console.log("I am middle two");
+  next();
+}
 
-app.listen(port)
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+  console.log("I am main function");
+});
+app.use(ErrorHandling);
+
+app.listen(port);
